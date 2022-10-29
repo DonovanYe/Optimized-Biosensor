@@ -1,0 +1,7 @@
+data_module:
+  name: FashionMNISTDataModule
+  shape: [32, 32]
+  batch_size: 1
+val_test_loss:
+  name: ClassificationAccuracy
+vis_freq: 1000

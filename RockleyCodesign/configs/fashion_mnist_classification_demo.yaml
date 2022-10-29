@@ -1,0 +1,19 @@
+_BASE_: default.yaml
+exp_name: fashion_mnist_classification_demo2
+trainer:
+  max_epochs: 10
+data_module:
+  name: FashionMNISTDataModule
+  shape: [32, 32]
+val_epoch_vis_freq: 2
+test_batch_vis_freq: 1000
+model:
+  sampler:
+    name: IdentitySampler
+  predictor:
+    name: CNNClassifier
+    channels: 16
+train_loss:
+  name: CrossEntropyLoss
+val_test_loss:
+  name: ClassificationAccuracy

@@ -1,0 +1,21 @@
+exp_name: default
+procedure:
+  name: TrainValTest
+task: cls
+trainer:
+  max_epochs: 1000
+lr: 0.001
+logger:
+  project: rockley_codesign
+data_module:
+  name: TBD
+model:
+  name: RockleyCodesign
+  sampler:
+    name: TBD
+  predictor:
+    name: TBD
+train_loss:
+  name: MSELoss
+val_test_loss:
+  name: MSE

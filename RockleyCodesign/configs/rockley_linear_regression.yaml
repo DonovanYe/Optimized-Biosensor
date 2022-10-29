@@ -1,0 +1,20 @@
+_BASE_: default.yaml
+exp_name: rockley_linear_regression
+trainer:
+  max_epochs: 50
+data_module:
+  name: RockleyDataModule
+  shape: [197]
+val_epoch_vis_freq: 2
+test_batch_vis_freq: 1000
+model:
+  sampler:
+    name: IdentitySampler
+  predictor:
+    name: LinearRegressor
+    input_size: 197
+train_loss:
+  name: MSELoss
+val_test_loss:
+  name: MSELoss
+lr: 1
