@@ -21,6 +21,12 @@ def _process_data(
     
     return X, y
 
+def _standardize_given(
+    data: np.array,
+    mean: np.array,
+    std: np.array,
+) -> np.array:
+    return (data - mean) / std
 
 def _split_data(
     X: np.array,
@@ -67,6 +73,28 @@ def load_data(
     """
     # load data
     data = pd.read_parquet(filename)
-    X, y = _process_data(data, standardize)
+    X, y, _ = _process_data(data, standardize)
 
     return _split_data(X, y, split, seed)
+
+def load_train_test_val(
+    trainfile: str,
+    testfile: str,
+    standardize: bool,
+    split: float = 0.8,
+    seed: int = 2022,
+) -> tuple[tuple[np.array, np.array], tuple[np.array, np.array], tuple[np.array, np.array]]:
+    train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
+    test = load_data(filename=testfile, standardize=False, split=1, seed=seed)
+
+    Xtrain_un, Ytrain = train
+    Xval_un, Yval = val
+    Xtest_un, Ytest = test
+
+    Xmean = np.mean(Xtrain_un, axis=0)
+    Xstd = np.std(Xtrain_un, axis=0)
+    Xtrain_n = _process_data(Xtrain_un, Xmean, Xstd)
+    Xval_n = _process_data(Xval_un, Xmean, Xstd)
+    Xtest_n = _process_data(Xtest_un, Xmean, Xstd)
+
+    return (Xtrain_n, Ytrain), (Xval_n, Yval), (Xtest_n, Ytest)
