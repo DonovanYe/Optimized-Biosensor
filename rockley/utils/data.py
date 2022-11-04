@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import typing
 
 
 NUM_LASERS = 197
@@ -8,7 +9,7 @@ NUM_LASERS = 197
 def _process_data(
     data: pd.DataFrame,
     standardize: bool
-) -> tuple[np.array, np.array]:
+) -> typing.Tuple[np.array, np.array]:
     """
     Split data into lasers X and ethanol concentration y. Standardize the
     input data to have zero mean and one standard deviation if specified.
@@ -33,7 +34,7 @@ def _split_data(
     y: np.array,
     split: float,
     seed: int
-) -> tuple[tuple[np.array, np.array], tuple[np.array, np.array]]:
+) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     """
     Split data into training and validation sets
     """
@@ -57,7 +58,7 @@ def load_data(
     standardize: bool = True,
     split: float = 0.8,
     seed: int = 2022
-) -> tuple[tuple[np.array, np.array], tuple[np.array, np.array]]:
+) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     """
     Load data from a file and split into training/validation sets.
 
@@ -83,7 +84,7 @@ def load_train_test_val(
     standardize: bool,
     split: float = 0.8,
     seed: int = 2022,
-) -> tuple[tuple[np.array, np.array], tuple[np.array, np.array], tuple[np.array, np.array]]:
+) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
     test = load_data(filename=testfile, standardize=False, split=1, seed=seed)
 
