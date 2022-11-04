@@ -27,7 +27,10 @@ def _standardize_given(
     mean: np.array,
     std: np.array,
 ) -> np.array:
-    return (data - mean) / std
+    norm = np.array(data)
+    for i in range(len(mean)):
+        norm[:, i] = (norm[:, i] - mean[i]) / std[i]
+    return norm
 
 def _split_data(
     X: np.array,
@@ -74,7 +77,7 @@ def load_data(
     """
     # load data
     data = pd.read_parquet(filename)
-    X, y, _ = _process_data(data, standardize)
+    X, y = _process_data(data, standardize)
 
     return _split_data(X, y, split, seed)
 
@@ -84,18 +87,37 @@ def load_train_test_val(
     standardize: bool,
     split: float = 0.8,
     seed: int = 2022,
+    precision: int = 64,
 ) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
-    test = load_data(filename=testfile, standardize=False, split=1, seed=seed)
+    test, _ = load_data(filename=testfile, standardize=False, split=1, seed=seed)
 
     Xtrain_un, Ytrain = train
     Xval_un, Yval = val
     Xtest_un, Ytest = test
 
+    if not standardize:
+        if precision == 32:
+            Xtrain_un = np.array(Xtrain_un, dtype=np.float32)
+            Ytrain = np.array(Ytrain, dtype=np.float32)
+            Xval_un = np.array(Xval_un, dtype=np.float32)
+            Yval = np.array(Yval, dtype=np.float32)
+            Xtest_un = np.array(Xtest_un, dtype=np.float32)
+            Ytest = np.array(Ytest, dtype=np.float32)
+        return (Xtrain_un, Ytrain), (Xval_un, Yval), (Xtest_un, Ytest)
+    
     Xmean = np.mean(Xtrain_un, axis=0)
     Xstd = np.std(Xtrain_un, axis=0)
-    Xtrain_n = _process_data(Xtrain_un, Xmean, Xstd)
-    Xval_n = _process_data(Xval_un, Xmean, Xstd)
-    Xtest_n = _process_data(Xtest_un, Xmean, Xstd)
+    Xtrain_n = _standardize_given(Xtrain_un, Xmean, Xstd)
+    Xval_n = _standardize_given(Xval_un, Xmean, Xstd)
+    Xtest_n = _standardize_given(Xtest_un, Xmean, Xstd)
+
+    if precision == 32:
+        Xtrain_n = np.array(Xtrain_n, dtype=np.float32)
+        Ytrain = np.array(Ytrain, dtype=np.float32)
+        Xval_n = np.array(Xval_n, dtype=np.float32)
+        Yval = np.array(Yval, dtype=np.float32)
+        Xtest_n = np.array(Xtest_n, dtype=np.float32)
+        Ytest = np.array(Ytest, dtype=np.float32)
 
     return (Xtrain_n, Ytrain), (Xval_n, Yval), (Xtest_n, Ytest)
