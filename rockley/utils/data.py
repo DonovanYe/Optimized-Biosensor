@@ -88,6 +88,7 @@ def load_train_test_val(
     split: float = 0.8,
     seed: int = 2022,
     precision: int = 64,
+    truncate: float = 1,
 ) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
     test, _ = load_data(filename=testfile, standardize=False, split=1, seed=seed)
@@ -104,6 +105,10 @@ def load_train_test_val(
             Yval = np.array(Yval, dtype=np.float32)
             Xtest_un = np.array(Xtest_un, dtype=np.float32)
             Ytest = np.array(Ytest, dtype=np.float32)
+        
+        Xtrain_un = Xtrain_un[:int(truncate * len(Xtrain_un))]
+        Ytrain = Ytrain[:int(truncate * len(Ytrain))]
+        
         return (Xtrain_un, Ytrain), (Xval_un, Yval), (Xtest_un, Ytest)
     
     Xmean = np.mean(Xtrain_un, axis=0)
@@ -119,5 +124,8 @@ def load_train_test_val(
         Yval = np.array(Yval, dtype=np.float32)
         Xtest_n = np.array(Xtest_n, dtype=np.float32)
         Ytest = np.array(Ytest, dtype=np.float32)
+    
+    Xtrain_n = Xtrain_n[:int(truncate * len(Xtrain_n))]
+    Ytrain = Ytrain[:int(truncate * len(Ytrain))]
 
     return (Xtrain_n, Ytrain), (Xval_n, Yval), (Xtest_n, Ytest)
