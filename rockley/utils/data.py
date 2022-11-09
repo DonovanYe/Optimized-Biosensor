@@ -89,6 +89,7 @@ def load_train_test_val(
     seed: int = 2022,
     precision: int = 64,
     truncate: float = 1,
+    standardize_y: bool = False,
 ) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
     test, _ = load_data(filename=testfile, standardize=False, split=1, seed=seed)
@@ -116,6 +117,12 @@ def load_train_test_val(
     Xtrain_n = _standardize_given(Xtrain_un, Xmean, Xstd)
     Xval_n = _standardize_given(Xval_un, Xmean, Xstd)
     Xtest_n = _standardize_given(Xtest_un, Xmean, Xstd)
+    if standardize_y:
+        Ymean = np.mean(Ytrain, axis=0)
+        Ystd = np.std(Ytrain, axis=0)
+        Ytrain = (Ytrain - Ymean) / Ystd
+        Yval = (Yval - Ymean) / Ystd
+        Ytest = (Ytest - Ymean) / Ystd
 
     if precision == 32:
         Xtrain_n = np.array(Xtrain_n, dtype=np.float32)
