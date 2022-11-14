@@ -4,3 +4,6 @@ data
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.gif
+linear_reg_models
+gif_img
