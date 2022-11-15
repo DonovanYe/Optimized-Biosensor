@@ -1,0 +1,21 @@
+_BASE_: default.yaml
+exp_name: rockley_nonlinear_regression
+trainer:
+  max_epochs: 100
+data_module:
+  name: RockleyDataModule
+  shape: [50]
+  truncate: 0.1
+  top_idx: 50
+val_epoch_vis_freq: 2
+test_batch_vis_freq: 1000
+model:
+  sampler:
+    name: IdentitySampler
+  predictor:
+    name: NonlinearRegressor
+    input_size: 50
+train_loss:
+  name: MSELoss
+val_test_loss:
+  name: MSELoss

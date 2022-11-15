@@ -27,7 +27,7 @@ class TrainValTest:
 
         # train model
         trainer = pl.Trainer(
-            # accelerator='gpu', 
+            accelerator='auto', 
             devices=1, 
             logger=WandbLogger(**dict(self.cfg.logger)),
             callbacks=[
