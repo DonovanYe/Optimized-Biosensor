@@ -91,7 +91,8 @@ def load_train_test_val(
     truncate: float = 1,
     standardize_y: bool = False,
     top_idx: int = -1,
-    idx_file: str = "../data/removed_lasers.npy"
+    idx_file: str = "../data/removed_lasers.npy",
+    noise: float = 0,
 ) -> typing.Tuple[typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array], typing.Tuple[np.array, np.array]]:
     train, val = load_data(filename=trainfile, standardize=False, split=split, seed=seed)
     test, _ = load_data(filename=testfile, standardize=False, split=1, seed=seed)
@@ -105,6 +106,11 @@ def load_train_test_val(
         Xtrain_un = Xtrain_un[:, idxs[-top_idx:]]
         Xval_un = Xval_un[:, idxs[-top_idx:]]
         Xtest_un = Xtest_un[:, idxs[-top_idx:]]
+
+    if noise > 0:
+        Xtrain_un = Xtrain_un + np.random.normal(0, noise, np.shape(Xtrain_un))
+        Xval_un = Xval_un + np.random.normal(0, noise, np.shape(Xval_un))
+        Xtest_un = Xtest_un + np.random.normal(0, noise, np.shape(Xtest_un))
 
     if not standardize:
         if precision == 32:
