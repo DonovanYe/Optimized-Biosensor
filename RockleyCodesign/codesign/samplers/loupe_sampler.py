@@ -50,7 +50,7 @@ class RandomMask(nn.Module):
         input_shape = x.size()
         threshs = torch.rand(input_shape, dtype=common_dtype)
         threshs = threshs.cuda()
-        return threshs
+        return 0 * x + threshs
 
 # Binary mask of whether to realize a value with probability p
 # Made differentiable with sigmoid
@@ -62,10 +62,7 @@ class ThresholdRandomMask(nn.Module):
     def forward(self, x):
         inputs = x[0]
         thresh = x[1]
-        if self.slope is not None:
-            return torch.sigmoid(self.slope * (inputs - thresh))
-        else:
-            return inputs > thresh
+        return torch.sigmoid(self.slope * (inputs - thresh))
 
 # Multiply mask with original data          
 class UnderSample(nn.Module):

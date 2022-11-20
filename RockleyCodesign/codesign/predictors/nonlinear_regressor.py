@@ -9,21 +9,21 @@ class NonlinearRegressor(nn.Module):
 
     super(NonlinearRegressor, self).__init__()
     self.layer1 = nn.Sequential(
-      nn.Linear(input_size, 20),
-      nn.BatchNorm1d(20),
-      nn.ReLU(),
+      nn.Linear(input_size, 100),
+      nn.BatchNorm1d(100),
+      nn.LeakyReLU(),
     )
     self.layer1.apply(init_weights)
 
     self.layer2 = nn.Sequential(
-      nn.Linear(20, 10),
-      nn.BatchNorm1d(10),
-      nn.ReLU(),
+      nn.Linear(100, 20),
+      nn.BatchNorm1d(20),
+      nn.LeakyReLU(),
     )
     self.layer2.apply(init_weights)
 
     self.layer3 = nn.Sequential(
-      nn.Linear(10, 1)
+      nn.Linear(20, 1)
     )
        
   def forward(self, x):
