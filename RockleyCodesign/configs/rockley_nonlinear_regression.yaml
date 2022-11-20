@@ -4,17 +4,16 @@ trainer:
   max_epochs: 100
 data_module:
   name: RockleyDataModule
-  shape: [50]
-  truncate: 0.1
-  top_idx: 50
+  shape: [197]
 val_epoch_vis_freq: 2
 test_batch_vis_freq: 1000
 model:
   sampler:
-    name: IdentitySampler
+    name: LOUPESampler
+    input_size: 197
   predictor:
     name: NonlinearRegressor
-    input_size: 50
+    input_size: 197
 train_loss:
   name: MSELoss
 val_test_loss:
