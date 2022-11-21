@@ -7,7 +7,7 @@ common_dtype = torch.float32
 
 # Turn a set of weights to probabilities from 0 to 1
 class ProbMask(nn.Module):
-    def __init__(self, input_size, slope=5):
+    def __init__(self, input_size, slope=10):
         super(ProbMask, self).__init__()
 
         self.slope = nn.Parameter(torch.tensor(slope, dtype=common_dtype), requires_grad=False)
@@ -55,7 +55,7 @@ class RandomMask(nn.Module):
 # Binary mask of whether to realize a value with probability p
 # Made differentiable with sigmoid
 class ThresholdRandomMask(nn.Module):
-    def __init__(self, slope = 200, **kwargs):
+    def __init__(self, slope = 12, **kwargs):
         super(ThresholdRandomMask, self).__init__(**kwargs)
         self.slope = nn.Parameter(torch.tensor(slope, dtype=common_dtype), requires_grad=False)
 

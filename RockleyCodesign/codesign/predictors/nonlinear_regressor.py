@@ -11,14 +11,14 @@ class NonlinearRegressor(nn.Module):
     self.layer1 = nn.Sequential(
       nn.Linear(input_size, 100),
       nn.BatchNorm1d(100),
-      nn.LeakyReLU(),
+      nn.LeakyReLU(0.1),
     )
     self.layer1.apply(init_weights)
 
     self.layer2 = nn.Sequential(
       nn.Linear(100, 20),
       nn.BatchNorm1d(20),
-      nn.LeakyReLU(),
+      nn.LeakyReLU(0.1),
     )
     self.layer2.apply(init_weights)
 
