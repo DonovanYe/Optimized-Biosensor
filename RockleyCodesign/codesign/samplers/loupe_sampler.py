@@ -59,9 +59,7 @@ class ThresholdRandomMask(nn.Module):
         super(ThresholdRandomMask, self).__init__(**kwargs)
         self.slope = nn.Parameter(torch.tensor(slope, dtype=common_dtype), requires_grad=False)
 
-    def forward(self, x):
-        inputs = x[0]
-        thresh = x[1]
+    def forward(self, inputs, thresh):
         return torch.sigmoid(self.slope * (inputs - thresh))
 
 # Multiply mask with original data          
@@ -69,8 +67,8 @@ class UnderSample(nn.Module):
     def __init__(self, **kwargs):
         super(UnderSample, self).__init__(**kwargs)
 
-    def forward(self, x):
-        undersample = x[0] * x[1]
+    def forward(self, a, b):
+        undersample = a * b
         return undersample
 
 class LOUPESampler(nn.Module):
@@ -87,6 +85,6 @@ class LOUPESampler(nn.Module):
         prob_mask = self.prob_mask(x)
         rescaled = self.rescale(prob_mask)
         uniform_thresh = self.rand_mask(rescaled)
-        thresholded = self.thresh(torch.stack([rescaled, uniform_thresh]))
-        undersample = self.undersample(torch.stack([x, thresholded]))
+        thresholded = self.thresh(rescaled, uniform_thresh)
+        undersample = self.undersample(x, thresholded)
         return undersample
