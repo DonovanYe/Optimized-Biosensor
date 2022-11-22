@@ -49,7 +49,8 @@ class RandomMask(nn.Module):
     def forward(self, x):
         input_shape = x.size()
         threshs = torch.rand(input_shape, dtype=common_dtype)
-        threshs = threshs.cuda()
+        if torch.cuda.is_available():
+            threshs = threshs.cuda()
         return 0 * x + threshs
 
 # Binary mask of whether to realize a value with probability p
