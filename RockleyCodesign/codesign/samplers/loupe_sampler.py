@@ -72,20 +72,54 @@ class UnderSample(nn.Module):
         undersample = a * b
         return undersample
 
+from torch.autograd import Function
+class Binarize(Function):
+    def __init__(self):
+        super().__init__()
+        
+    @staticmethod
+    def forward(ctx, rescaled_prob, sparsity):
+        input_shape = rescaled_prob.size()
+        u = torch.rand(input_shape)
+        if torch.cuda.is_available():
+            u = u.cuda()
+        while abs(torch.mean(torch.le(u, rescaled_prob).float()) - sparsity) / sparsity > 0.1:
+            u = torch.rand(input_shape)
+            if torch.cuda.is_available():
+                u = u.cuda()
+        ctx.save_for_backward(rescaled_prob, u)
+        mask = torch.le(u, rescaled_prob).float()
+        return mask
+        
+    @staticmethod
+    def backward(ctx, grad):
+        slope = 10
+        rescaled_prob, u = ctx.saved_tensors
+        x = rescaled_prob - u
+        grad *= slope * torch.exp(-slope * x) / torch.pow(torch.exp(-slope * x) + 1, 2)
+        return grad, None
+    
+
 class LOUPESampler(nn.Module):
-    def __init__(self, input_size, sparsity=0.25):
+    def __init__(self, input_size, budget):
         super(LOUPESampler, self).__init__()
-        self.sparsity = sparsity
+        self.sparsity = budget / input_size
         self.prob_mask = ProbMask(input_size)
         self.rescale = RescaleProbMap(self.sparsity)
-        self.rand_mask = RandomMask()
-        self.thresh = ThresholdRandomMask()
-        self.undersample = UnderSample()
+        self.binarize = Binarize.apply
       
     def forward(self, x):
         prob_mask = self.prob_mask(x)
         rescaled = self.rescale(prob_mask)
-        uniform_thresh = self.rand_mask(rescaled)
-        thresholded = self.thresh(rescaled, uniform_thresh)
-        undersample = self.undersample(x, thresholded)
+        binary_map = self.binarize(rescaled, self.sparsity)
+        return binary_map * x
+
+        # print(torch.sum(rescaled))
+        # print(rescaled)
+        # uniform_thresh = self.rand_mask(rescaled)
+        # thresholded = self.thresh(rescaled, uniform_thresh)
+        # print(thresholded)
+        # undersample = self.undersample(x, thresholded)
+        # print(thresholded)
+        raise
         return undersample
