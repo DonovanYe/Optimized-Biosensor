@@ -89,4 +89,12 @@ class LitCoDesign(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.lr)
-        return optimizer
+        sch = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
+        return {
+            "optimizer":optimizer,
+            "lr_scheduler" : {
+                "scheduler" : sch,
+                "monitor" : "train_" + self.train_loss.name
+                
+            }
+        }
