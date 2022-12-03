@@ -1,0 +1,27 @@
+_BASE_: default.yaml
+exp_name: PreindexedLOUPEModel
+task: reg
+init_exp_dir: results/PreindexedLOUPEModel
+init_modules: [predictor]
+init_module_trainability: [true]
+trainer:
+  max_epochs: 100
+data_module:
+  name: RockleyDataModule
+  shape: [197]
+  batch_size: 256
+val_epoch_vis_freq: 2
+test_batch_vis_freq: 1000
+model:
+  sampler:
+    name: IndexSampler
+    input_size: 197
+    idxs: [0, 3, 6, 7, 9, 13, 17, 21, 26, 31, 32, 33, 37, 39, 40, 42, 47, 48, 49, 52, 53, 71, 79, 85, 89, 91, 94, 95, 97, 99, 101, 103, 107, 108, 122, 132, 133, 142, 144, 148, 150, 151, 158, 162, 164, 171, 175, 183, 190]
+  predictor:
+    name: NonlinearRegressor
+    input_size: 197
+train_loss:
+  name: MSELoss
+val_test_loss:
+  name: MSELoss
+lr: 0.001

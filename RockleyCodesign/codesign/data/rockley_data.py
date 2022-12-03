@@ -45,7 +45,7 @@ class RockleyDataModule(BaseDataModule):
     TEST_LOCATION = "../data/test_regression.parquet"
     VAL_RATIO = 0.2
     
-    def __init__(self, shape, batch_size=256, truncate=1, top_idx=-1):
+    def __init__(self, shape, batch_size=256, truncate=1, top_idx=-1, noise=0):
         super().__init__(shape, batch_size)
 
         train, val, test = data_loader.load_train_test_val(
@@ -54,7 +54,7 @@ class RockleyDataModule(BaseDataModule):
             standardize=True,
             split=(1 - RockleyDataModule.VAL_RATIO),
             truncate=truncate,
-            top_idx=top_idx
+            top_idx=top_idx,
         ) 
 
         self.train = train
