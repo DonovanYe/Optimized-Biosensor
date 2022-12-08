@@ -27,8 +27,8 @@ def process_data(
     Split data into training and validation and standardize X using the
     training set. Optionally add Gaussian noise.
     """
-    X = data.iloc[:, :NUM_LASERS].to_numpy(copy=True)
-    y = data.iloc[:, NUM_LASERS].to_numpy(copy=True)
+    X = data.iloc[:, :NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
+    y = data.iloc[:, NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
 
     # split into training and validation
     np.random.seed(seed)
@@ -61,7 +61,7 @@ def process_data(
     return (X_train, y_train), (X_valid, y_valid)
 
 
-def reverse_beam_search(X_train, y_train, iters=20, log=True):
+def reverse_beam_search(X_train, y_train, iters=30, log=True):
     # contains the indicies of lasers selected by reverse beam
     # in order of selection
     selected_lasers  = []
@@ -133,7 +133,7 @@ def ridge_regression(
 if __name__ == '__main__':
     data = pd.read_parquet('./data/train_regression.parquet')
 
-    for std in [0.0, 0.0001]:
+    for std in [0.0, 1e-5]:
         (X_train, y_train), (X_valid, y_valid) = process_data(data, noise_std=std)
 
         # selected_lasers = reverse_beam_search(X_train, y_train)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
         num_lasers = list(range(11, 21))
         valid_mse = [
-            [], [], []
+            [], []
         ]
         for n in num_lasers:
             for i in range(len(valid_mse)):
