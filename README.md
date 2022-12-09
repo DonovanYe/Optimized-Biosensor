@@ -5,6 +5,10 @@ Codebase for Caltech CS101 Fall Term Rockley Biosensor project
 Caltech-specific Drive can be found here (https://drive.google.com/drive/folders/11NOC_AVTIbZVXqcplVU5nI-KjhPXodyc?usp=share_link)
 Files in the "notebook" directory will need to be run in google drive.
 
+NOTE:
+Highly recommend using the Drive link if possible to run data as there are many frequently overwritten files/configs
+Drive and codebase may be out of sync from Drive usage as a result
+
 # Methods
 
 ## Codesign and PyTorch training in general

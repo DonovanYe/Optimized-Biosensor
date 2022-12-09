@@ -1,0 +1,7 @@
+data_module:
+  name: RockleyDataModule
+  shape: [197]
+  batch_size: 1
+val_test_loss:
+  name: MSELoss
+vis_freq: 1000
