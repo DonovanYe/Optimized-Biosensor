@@ -3,6 +3,7 @@
 Codebase for Caltech CS101 Fall Term Rockley Biosensor project
 
 Caltech-specific Drive can be found here (https://drive.google.com/drive/folders/11NOC_AVTIbZVXqcplVU5nI-KjhPXodyc?usp=share_link)
+Files in the "notebook" directory will need to be run in google drive.
 
 # Methods
 
