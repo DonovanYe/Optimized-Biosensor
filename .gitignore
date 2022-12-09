@@ -7,3 +7,4 @@ __pycache__/
 *.gif
 linear_reg_models
 gif_img
+*.npy
