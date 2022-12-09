@@ -9,26 +9,46 @@ from sklearn.metrics import mean_squared_error
 
 NUM_LASERS = 197
 
-REVERSE_BEAM_RESULTS = [
-    [50, 91, 97, 9, 33, 29, 49, 45, 46, 48,
-     47, 32, 6, 44, 34, 90, 22, 87, 145, 20],
-    [50, 91, 97, 9, 33, 29, 11, 0, 75, 1, 13,
-     61, 151, 174, 178, 96, 175, 185, 179, 17]
-]
+
+# stored results for the first 70 selections of reverse beam
+# to make runtime faster
+# these were computed with seed = 2022 for the training/validation split
+REVERSE_BEAM_RESULTS = {
+    0.0:  [50, 91, 97, 9, 33, 29, 49, 45, 46, 48,
+           47, 32, 6, 44, 90, 34, 95, 87, 11, 15,
+           191, 26, 141, 30, 192, 103, 8, 111, 31, 99,
+           190, 187, 172, 148, 189, 28, 142, 23, 158, 117,
+           22, 196, 139, 89, 3, 27, 195, 51, 55, 144,
+           5, 88, 186, 94, 43, 72, 185, 163, 58, 71,
+           125, 162, 193, 160, 13, 62, 61, 35, 0, 14],
+    1e-5: [50, 91, 97, 9, 33, 29, 47, 53, 96, 17,
+           0, 62, 1, 4, 55, 184, 182, 147, 142, 60,
+           166, 172, 177, 173, 74, 56, 71, 19, 58, 61,
+           2, 92, 30, 100, 34, 70, 68, 66, 22, 28,
+           77, 5, 176, 124, 132, 136, 123, 48, 72, 164,
+           87, 35, 31, 78, 88, 51, 6, 175, 54, 101,
+           27, 129, 21, 14, 83, 46, 3, 76, 49, 89]
+}
 
 
 def process_data(
-    data: np.array,
+    train: np.array,
+    test:  np.array,
     split: float = 0.8,
     seed: int = 2022,
     noise_std: float = 0.0
-) -> tuple[tuple[np.array, np.array], tuple[np.array, np.array]]:
+) -> tuple[tuple[np.array, np.array],
+           tuple[np.array, np.array],
+           tuple[np.array, np.array]]:
     """
     Split data into training and validation and standardize X using the
     training set. Optionally add Gaussian noise.
     """
-    X = data.iloc[:, :NUM_LASERS].to_numpy(copy=True)
-    y = data.iloc[:, NUM_LASERS].to_numpy(copy=True)
+    X = train.iloc[:, :NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
+    y = train.iloc[:, NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
+
+    X_test = test.iloc[:, :NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
+    y_test = test.iloc[:, NUM_LASERS].to_numpy(copy=True, dtype=np.float32)
 
     # split into training and validation
     np.random.seed(seed)
@@ -48,6 +68,7 @@ def process_data(
     if noise_std > 0.0:
         X_train += np.random.normal(scale=noise_std, size=X_train.shape)
         X_valid += np.random.normal(scale=noise_std, size=X_valid.shape)
+        X_test  += np.random.normal(scale=noise_std, size=X_test.shape)
 
     # standardize data
     X_mean = np.mean(X_train, axis=0)
@@ -57,11 +78,12 @@ def process_data(
     # the training set
     X_train = (X_train - X_mean) / X_std
     X_valid = (X_valid - X_mean) / X_std
+    X_test  = (X_test  - X_mean) / X_std
 
-    return (X_train, y_train), (X_valid, y_valid)
+    return (X_train, y_train), (X_valid, y_valid), (X_test, y_test)
 
 
-def reverse_beam_search(X_train, y_train, iters=20, log=True):
+def reverse_beam_search(X_train, y_train, iters=70, log=True):
     # contains the indicies of lasers selected by reverse beam
     # in order of selection
     selected_lasers  = []
@@ -102,6 +124,7 @@ def reverse_beam_search(X_train, y_train, iters=20, log=True):
 def ridge_regression(
     X_train, y_train,
     X_valid, y_valid,
+    X_test,  y_test,
     degree=1,
     alpha=0.0,
     log=True,
@@ -114,10 +137,12 @@ def ridge_regression(
         poly = PolynomialFeatures(degree, include_bias=False)
         X_train = poly.fit_transform(X_train)
         X_valid = poly.fit_transform(X_valid)
+        X_test  = poly.fit_transform(X_test)
     
     reg = Ridge(alpha=alpha).fit(X_train, y_train)
     train_mse = mean_squared_error(reg.predict(X_train), y_train)
     valid_mse = mean_squared_error(reg.predict(X_valid), y_valid)
+    test_mse  = mean_squared_error(reg.predict(X_test),  y_test)
 
     if log:
         print(f'num lasers = {num_lasers}')
@@ -127,38 +152,51 @@ def ridge_regression(
         print(f'valid mse = {valid_mse}')
         print('-' * 75)
 
-    return valid_mse
+    return test_mse
 
 
 if __name__ == '__main__':
-    data = pd.read_parquet('./data/train_regression.parquet')
+    train = pd.read_parquet('./data/train_regression.parquet')
+    test  = pd.read_parquet('./data/test_regression.parquet')
 
-    for std in [0.0, 0.0001]:
-        (X_train, y_train), (X_valid, y_valid) = process_data(data, noise_std=std)
+    for std in [0.0, 1e-5]:
+        ((X_train, y_train),
+         (X_valid, y_valid),
+         (X_test, y_test)) = process_data(train, test, noise_std=std)
 
-        # selected_lasers = reverse_beam_search(X_train, y_train)
-        if std == 0.0:
-            selected_lasers = REVERSE_BEAM_RESULTS[0]
+        # use the saved laser selection for reverse beam
+        # otherwise run reverse beam if result is not saved
+        if std in REVERSE_BEAM_RESULTS:
+            selected_lasers = REVERSE_BEAM_RESULTS[std]
         else:
-            selected_lasers = REVERSE_BEAM_RESULTS[1]
+            selected_lasers = reverse_beam_search(X_train, y_train)
 
-        num_lasers = list(range(11, 21))
-        valid_mse = [
-            [], [], []
+        # perform linear and quadratic regression
+        # on reverse beam results
+        num_lasers = [20, 30, 40, 50, 60, 70]
+        test_mse =  [
+            [], []
         ]
         for n in num_lasers:
-            for i in range(len(valid_mse)):
-                mse = ridge_regression(
+            print(selected_lasers[:n])
+            for i in range(len(test_mse)):
+                t_mse = ridge_regression(
                     X_train[:, selected_lasers[:n]], y_train,
                     X_valid[:, selected_lasers[:n]], y_valid,
+                    X_test[:,  selected_lasers[:n]], y_test,
                     degree=i+1,
                 )
-                valid_mse[i].append(mse)
+                test_mse[i].append(t_mse)
 
-        for i in range(len(valid_mse)):
-            plt.plot(num_lasers, valid_mse[i], label=f'degree {i+1}')
+        print(f'FINAL RESULTS (noise std = {std})')
+        print(f'test mse (degree 1) = {test_mse[0]}')
+        print(f'test mse (degree 2) = {test_mse[1]}')
+        print('-' * 75)
+
+        for i in range(len(test_mse)):
+            plt.plot(num_lasers, test_mse[i], label=f'degree {i+1}')
         plt.xlabel('Num Lasers')
-        plt.ylabel('Validation MSE')
-        plt.title(f'Ridge Regression (noise std = {std})')
+        plt.ylabel('Test MSE')
+        plt.title(f'Polynomial Regression (noise std = {std})')
         plt.legend()
         plt.show()

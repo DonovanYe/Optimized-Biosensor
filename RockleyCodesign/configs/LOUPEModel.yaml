@@ -1,0 +1,38 @@
+_BASE_: default.yaml
+exp_name: LOUPEModel
+task: reg
+
+# init options specify if we use a checkpoint and, once we load it,
+# which parts of the network are still trainable
+# keep in mind that the directory in init_exp_dir can only have one checkpoint
+# in it (one file of .ckpt)
+
+# init_exp_dir: results/LOUPEModel
+# init_modules: [sampler, predictor]
+# init_module_trainability: [true, true]
+trainer:
+  max_epochs: 100
+data_module:
+  # Pass arguments to the data loader here
+  name: RockleyDataModule
+  shape: [197]
+  batch_size: 64
+val_epoch_vis_freq: 2
+test_batch_vis_freq: 1000
+model:
+  sampler:
+    # Pass arguments to the sampler here
+    name: LOUPESampler
+    input_size: 197
+    # Parameter to set the number of lasers we want to use
+    budget: 50
+  predictor:
+     # Pass arguments to the regresor here
+    name: NonlinearRegressor
+    input_size: 197
+train_loss:
+  name: MSELoss
+val_test_loss:
+  name: MSELoss
+ # Set learning rate
+lr: 0.02
